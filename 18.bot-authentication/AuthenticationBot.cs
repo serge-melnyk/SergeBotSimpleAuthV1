@@ -53,8 +53,8 @@ namespace Microsoft.BotBuilderSamples
 
             // Add the OAuth prompts and related dialogs into the dialog set
             _dialogs.Add(Prompt(ConnectionName));
-            _dialogs.Add(new ConfirmPrompt(ConfirmPromptName));
-            _dialogs.Add(new WaterfallDialog("authDialog", new WaterfallStep[] { PromptStepAsync, LoginStepAsync, DisplayTokenAsync }));
+            //_dialogs.Add(new ConfirmPrompt(ConfirmPromptName));
+            _dialogs.Add(new WaterfallDialog("authDialog", new WaterfallStep[] { PromptStepAsync, LoginStepAsync }));
         }
 
         /// <summary>
@@ -199,14 +199,15 @@ namespace Microsoft.BotBuilderSamples
             if (tokenResponse != null)
             {
                 await step.Context.SendActivityAsync("You are now logged in.", cancellationToken: cancellationToken);
-                return await step.PromptAsync(
-                    ConfirmPromptName,
-                    new PromptOptions
-                    {
-                        Prompt = MessageFactory.Text("Would you like to view your token?"),
-                        Choices = new List<Choice> { new Choice("Yes"), new Choice("No") },
-                    },
-                    cancellationToken);
+                return Dialog.EndOfTurn;
+                //return await step.PromptAsync(
+                //    ConfirmPromptName,
+                //    new PromptOptions
+                //    {
+                //        Prompt = MessageFactory.Text("Would you like to view your token?"),
+                //        Choices = new List<Choice> { new Choice("Yes"), new Choice("No") },
+                //    },
+                //    cancellationToken);
             }
 
             await step.Context.SendActivityAsync("Login was not successful please try again.", cancellationToken: cancellationToken);
