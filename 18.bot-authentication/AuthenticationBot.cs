@@ -54,7 +54,7 @@ namespace Microsoft.BotBuilderSamples
             // Add the OAuth prompts and related dialogs into the dialog set
             _dialogs.Add(Prompt(ConnectionName));
             //_dialogs.Add(new ConfirmPrompt(ConfirmPromptName));
-            _dialogs.Add(new ChoicePrompt(ConfirmPromptName, ValidateChoise));
+            _dialogs.Add(new TextPrompt(ConfirmPromptName, ValidateChoise));
             //AddDialog(new TextPrompt(CityPrompt, ValidateCity));
             _dialogs.Add(new WaterfallDialog("authDialog", new WaterfallStep[] { PromptStepAsync, LoginStepAsync, DisplayTokenAsync }));
         }
@@ -201,14 +201,23 @@ namespace Microsoft.BotBuilderSamples
             if (tokenResponse != null)
             {
                 await step.Context.SendActivityAsync("You are now logged in.", cancellationToken: cancellationToken);
-                return await step.PromptAsync(
-                    ConfirmPromptName,
-                    new PromptOptions
+                var opts = new PromptOptions
+                {
+                    Prompt = new Activity
                     {
-                        Prompt = MessageFactory.Text("Would you like to view your token?"),
-                        Choices = new List<Choice> { new Choice("Yes"), new Choice("No") },
+                        Type = ActivityTypes.Message,
+                        Text = $"Would you like to view your token?",
                     },
-                    cancellationToken);
+                };
+                return await step.PromptAsync(ConfirmPromptName, opts);
+                //return await step.PromptAsync(
+                //    ConfirmPromptName,
+                //    new PromptOptions
+                //    {
+                //        Prompt = MessageFactory.Text("Would you like to view your token?"),
+                //        Choices = new List<Choice> { new Choice("Yes"), new Choice("No") },
+                //    },
+                //    cancellationToken);
             }
 
             await step.Context.SendActivityAsync("Login was not successful please try again.", cancellationToken: cancellationToken);
@@ -226,7 +235,7 @@ namespace Microsoft.BotBuilderSamples
         {
             var result = (string)step.Result;
             await step.Context.SendActivityAsync($"Test after login {step.Result.ToString()}.", cancellationToken: cancellationToken);
-            if (result == "Yes")
+            if (result == "yes")
             {
                 // Call the prompt again because we need the token. The reasons for this are:
                 // 1. If the user is already logged in we do not need to store the token locally in the bot and worry
@@ -254,13 +263,13 @@ namespace Microsoft.BotBuilderSamples
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can be used by other objects
         /// or threads to receive notice of cancellation.</param>
         /// <returns>A <see cref="Task"/> that represents the work queued to execute.</returns>
-        private async Task<bool> ValidateChoise(PromptValidatorContext<FoundChoice> promptContext, CancellationToken cancellationToken)
+        private async Task<bool> ValidateChoise(PromptValidatorContext<string> promptContext, CancellationToken cancellationToken)
         {
             // Validate that the user entered a minimum lenght for their name
-            var value = promptContext.Recognized.Value.Value?.Trim() ?? string.Empty;
-            if (value.Length >= 2)
+            var value = promptContext.Recognized.Value?.Trim() ?? string.Empty;
+            if (value == "yes" || value == "no")
             {
-                promptContext.Recognized.Value.Value = value;
+                promptContext.Recognized.Value = value;
                 return true;
             }
             else
