@@ -199,7 +199,7 @@ namespace Microsoft.BotBuilderSamples
             if (tokenResponse != null)
             {
                 await step.Context.SendActivityAsync("You are now logged in.", cancellationToken: cancellationToken);
-                await step.PromptAsync(
+                return await step.PromptAsync(
                     ConfirmPromptName,
                     new PromptOptions
                     {
