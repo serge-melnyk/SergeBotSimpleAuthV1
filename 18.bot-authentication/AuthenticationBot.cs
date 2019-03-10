@@ -53,7 +53,9 @@ namespace Microsoft.BotBuilderSamples
 
             // Add the OAuth prompts and related dialogs into the dialog set
             _dialogs.Add(Prompt(ConnectionName));
-            _dialogs.Add(new ConfirmPrompt(ConfirmPromptName));
+            //_dialogs.Add(new ConfirmPrompt(ConfirmPromptName));
+            _dialogs.Add(new ChoicePrompt(ConfirmPromptName, ValidateChoise));
+            //AddDialog(new TextPrompt(CityPrompt, ValidateCity));
             _dialogs.Add(new WaterfallDialog("authDialog", new WaterfallStep[] { PromptStepAsync, LoginStepAsync, DisplayTokenAsync }));
         }
 
@@ -243,6 +245,29 @@ namespace Microsoft.BotBuilderSamples
             }
 
             return Dialog.EndOfTurn;
+        }
+
+        /// <summary>
+        /// Validator function to verify if city meets required constraints.
+        /// </summary>
+        /// <param name="promptContext">Context for this prompt.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can be used by other objects
+        /// or threads to receive notice of cancellation.</param>
+        /// <returns>A <see cref="Task"/> that represents the work queued to execute.</returns>
+        private async Task<bool> ValidateChoise(PromptValidatorContext<FoundChoice> promptContext, CancellationToken cancellationToken)
+        {
+            // Validate that the user entered a minimum lenght for their name
+            var value = promptContext.Recognized.Value.Value?.Trim() ?? string.Empty;
+            if (value.Length >= 2)
+            {
+                promptContext.Recognized.Value.Value = value;
+                return true;
+            }
+            else
+            {
+                await promptContext.Context.SendActivityAsync($"Wrong choise.");
+                return false;
+            }
         }
     }
 }
