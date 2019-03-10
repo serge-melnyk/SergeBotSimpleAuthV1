@@ -88,6 +88,24 @@ namespace Microsoft.BotBuilderSamples
                         break;
                     }
 
+                    if (text == "work")
+                    {
+                        var botAdapter = (BotFrameworkAdapter)turnContext.Adapter;
+                        var token = await botAdapter.GetUserTokenAsync(turnContext, ConnectionName, null, cancellationToken).ConfigureAwait(false);
+                        if (token != null)
+                        {
+                            // use the token to do exciting things!
+                            await turnContext.SendActivityAsync("Doing some work here.", cancellationToken: cancellationToken);
+                        }
+                        else
+                        {
+                            // If Bot Service does not have a token, send an OAuth card to sign in
+                            await turnContext.SendActivityAsync("You shoud sign in to do this work.", cancellationToken: cancellationToken);
+                            await dc.BeginDialogAsync("authDialog", cancellationToken: cancellationToken);
+                        }
+                        break;
+                    }
+
                     if (text == "logout")
                     {
                         // The bot adapter encapsulates the authentication processes.
