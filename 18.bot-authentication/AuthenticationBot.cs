@@ -222,8 +222,8 @@ namespace Microsoft.BotBuilderSamples
         /// <returns>A <see cref="Task"/> representing the operation result of the operation.</returns>
         private static async Task<DialogTurnResult> DisplayTokenAsync(WaterfallStepContext step, CancellationToken cancellationToken)
         {
-            var result = (bool)step.Result;
-            if (result)
+            var result = (string)step.Result;
+            if (result == "Yes")
             {
                 // Call the prompt again because we need the token. The reasons for this are:
                 // 1. If the user is already logged in we do not need to store the token locally in the bot and worry
