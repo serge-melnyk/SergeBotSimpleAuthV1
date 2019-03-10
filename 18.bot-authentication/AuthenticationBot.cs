@@ -199,7 +199,6 @@ namespace Microsoft.BotBuilderSamples
             if (tokenResponse != null)
             {
                 await step.Context.SendActivityAsync("You are now logged in.", cancellationToken: cancellationToken);
-                return Dialog.EndOfTurn;
                 //return await step.PromptAsync(
                 //    ConfirmPromptName,
                 //    new PromptOptions
@@ -209,8 +208,11 @@ namespace Microsoft.BotBuilderSamples
                 //    },
                 //    cancellationToken);
             }
-
-            await step.Context.SendActivityAsync("Login was not successful please try again.", cancellationToken: cancellationToken);
+            else
+            {
+                await step.Context.SendActivityAsync("Login was not successful please try again.", cancellationToken: cancellationToken);
+            }
+            
             return Dialog.EndOfTurn;
         }
 
