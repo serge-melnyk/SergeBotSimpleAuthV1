@@ -35,8 +35,8 @@ namespace Microsoft.BotBuilderSamples
         private const string ConfirmPromptName = "confirmPrompt";
 
         private const string WelcomeText = @"This bot will introduce you to Authentication.
-                                        Type anything to get logged in. Type 'logout' to sign-out.
-                                        Type 'help' to view this message again";
+                                        Type anything to get logged in. Type logout to sign-out.
+                                        Type help to view this message again";
 
         private readonly AuthenticationBotAccessors _stateAccessors;
         private readonly DialogSet _dialogs;
@@ -199,7 +199,7 @@ namespace Microsoft.BotBuilderSamples
             if (tokenResponse != null)
             {
                 await step.Context.SendActivityAsync("You are now logged in.", cancellationToken: cancellationToken);
-                return await step.PromptAsync(
+                await step.PromptAsync(
                     ConfirmPromptName,
                     new PromptOptions
                     {
