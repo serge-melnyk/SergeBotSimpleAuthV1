@@ -223,6 +223,7 @@ namespace Microsoft.BotBuilderSamples
         private static async Task<DialogTurnResult> DisplayTokenAsync(WaterfallStepContext step, CancellationToken cancellationToken)
         {
             var result = (string)step.Result;
+            await step.Context.SendActivityAsync($"Test after login {step.Result.ToString()}.", cancellationToken: cancellationToken);
             if (result == "Yes")
             {
                 // Call the prompt again because we need the token. The reasons for this are:
