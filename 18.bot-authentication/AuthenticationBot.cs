@@ -35,8 +35,8 @@ namespace Microsoft.BotBuilderSamples
         private const string ConfirmPromptName = "confirmPrompt";
 
         private const string WelcomeText = @"This bot will introduce you to Authentication.
-                                        Type anything to get logged in. Type logout to sign-out.
-                                        Type help to view this message again";
+                                        Type anything to get logged in. Type 'logout' to sign-out.
+                                        Type 'help' to view this message again";
 
         private readonly AuthenticationBotAccessors _stateAccessors;
         private readonly DialogSet _dialogs;
@@ -53,8 +53,8 @@ namespace Microsoft.BotBuilderSamples
 
             // Add the OAuth prompts and related dialogs into the dialog set
             _dialogs.Add(Prompt(ConnectionName));
-            
-            _dialogs.Add(new WaterfallDialog("authDialog", new WaterfallStep[] { PromptStepAsync, LoginStepAsync }));
+            _dialogs.Add(new ConfirmPrompt(ConfirmPromptName));
+            _dialogs.Add(new WaterfallDialog("authDialog", new WaterfallStep[] { PromptStepAsync, LoginStepAsync, DisplayTokenAsync }));
         }
 
         /// <summary>
@@ -199,20 +199,17 @@ namespace Microsoft.BotBuilderSamples
             if (tokenResponse != null)
             {
                 await step.Context.SendActivityAsync("You are now logged in.", cancellationToken: cancellationToken);
-                //return await step.PromptAsync(
-                //    ConfirmPromptName,
-                //    new PromptOptions
-                //    {
-                //        Prompt = MessageFactory.Text("Would you like to view your token?"),
-                //        Choices = new List<Choice> { new Choice("Yes"), new Choice("No") },
-                //    },
-                //    cancellationToken);
+                return await step.PromptAsync(
+                    ConfirmPromptName,
+                    new PromptOptions
+                    {
+                        Prompt = MessageFactory.Text("Would you like to view your token?"),
+                        Choices = new List<Choice> { new Choice("Yes"), new Choice("No") },
+                    },
+                    cancellationToken);
             }
-            else
-            {
-                await step.Context.SendActivityAsync("Login was not successful please try again.", cancellationToken: cancellationToken);
-            }
-            
+
+            await step.Context.SendActivityAsync("Login was not successful please try again.", cancellationToken: cancellationToken);
             return Dialog.EndOfTurn;
         }
 
@@ -225,9 +222,8 @@ namespace Microsoft.BotBuilderSamples
         /// <returns>A <see cref="Task"/> representing the operation result of the operation.</returns>
         private static async Task<DialogTurnResult> DisplayTokenAsync(WaterfallStepContext step, CancellationToken cancellationToken)
         {
-            var result = (string)step.Result;
-            await step.Context.SendActivityAsync($"Test after login {step.Result.ToString()}.", cancellationToken: cancellationToken);
-            if (result == "Yes")
+            var result = (bool)step.Result;
+            if (result)
             {
                 // Call the prompt again because we need the token. The reasons for this are:
                 // 1. If the user is already logged in we do not need to store the token locally in the bot and worry
@@ -246,29 +242,6 @@ namespace Microsoft.BotBuilderSamples
             }
 
             return Dialog.EndOfTurn;
-        }
-
-        /// <summary>
-        /// Validator function to verify if city meets required constraints.
-        /// </summary>
-        /// <param name="promptContext">Context for this prompt.</param>
-        /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can be used by other objects
-        /// or threads to receive notice of cancellation.</param>
-        /// <returns>A <see cref="Task"/> that represents the work queued to execute.</returns>
-        private async Task<bool> ValidateChoise(PromptValidatorContext<FoundChoice> promptContext, CancellationToken cancellationToken)
-        {
-            // Validate that the user entered a minimum lenght for their name
-            var value = promptContext.Recognized.Value.Value?.Trim() ?? string.Empty;
-            if (value.Length >= 2)
-            {
-                promptContext.Recognized.Value.Value = value;
-                return true;
-            }
-            else
-            {
-                await promptContext.Context.SendActivityAsync($"Wrong choise.");
-                return false;
-            }
         }
     }
 }
